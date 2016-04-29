@@ -28,6 +28,17 @@ const int maxDistance = 30;
 const int numOfLamps = 3;
 const int maxBrightness = 254;
 
+int analogInputVal = 0;
+long detectionSpanInitial = 0;
+long detectionSpan = 0;
+int claps = 0;
+int currentClaps = 0;
+
+const int THRESHOLD = 90; //the sound level that will be treated as a 'clap'
+const int SOUND_SAMPLE_LENGTH = 500; //the amount of ms to wait before determining to turn off/on
+const int CLAP_DURATION_WINDOW = 1500; //the amount of ms max to make the number of claps specified (ms)
+const int CLAPS_FOR_TRIGGER_ON_OFF = 2; //the number of claps for the relay to trigger
+
 int loopCounter;
 
 EthernetClient client;
@@ -41,14 +52,17 @@ void setup() {
 
 void loop() {
 
-  if (loopCounter == 20) {
+  if (loopCounter == 50) {
 
-    checkDistance();
-    
+//    checkDistance();
     loopCounter = 0;
   }
-  loopCounter++;
-  delay(10);
+//  checkSound();
+//  loopCounter++;
+
+  setRandomColorOnGroup();
+  
+  delay(500);
 }
 
 
@@ -80,23 +94,79 @@ void checkDistance() {
         Serial.print(i);
         Serial.print(" brightness: ");
         Serial.print(maxBrightness);
+        turnOnOffLamp(i, true);
+        setBrightness(i, maxBrightness);
       }
       else if (i == currentLampId) {
         Serial.print("set lamp: ");
         Serial.print(i);
         Serial.print(" brightness: ");
         Serial.print( brightness);
+        turnOnOffLamp(i, true);
+        setBrightness(i, brightness);
       }
       else {
         Serial.print("turn of: ");
         Serial.print(i);
+        turnOnOffLamp(i, false);
       }
       Serial.println();
     }
   }
 }
 
+void checkSound() {
 
+  analogInputVal = analogRead(SOUND_SENSOR);
+
+  if (analogInputVal >= THRESHOLD)
+  {
+    Serial.println(analogInputVal);
+    if (claps == 0)
+    {
+      detectionSpanInitial = detectionSpan = millis();
+      claps++;
+    }
+    else if (claps > 0 && millis() - detectionSpan >= 200)
+    {
+      detectionSpan = millis();
+      claps++;
+    }
+  }
+
+  if (millis() - detectionSpanInitial >= 400)
+  {
+//    setGroupBrightness(lightState ? 200 : 0);
+//    lightState = !lightState;
+//      delay(1000);
+      
+    if (claps == CLAPS_FOR_TRIGGER_ON_OFF)
+    {
+      //      setRandomColorOnLamp(1);
+      //      setRandomColorOnLamp(2);
+      //      setRandomColorOnLamp(3);
+
+
+  
+//      setGroupBrightness(lightState ? 200 : 0);
+//    lightState = !lightState;
+      setRandomColorOnGroup();
+
+      String command;
+      //      turnOnOffLamp(3, !lightState);
+      //      turnOnOffLamp(2, !lightState);
+      //      turnOnOffLamp(1, !lightState);
+
+
+      
+
+      Serial.println("Command sent");
+//      delay(750);
+
+    }
+    claps = 0;
+  }
+}
 
 
 
