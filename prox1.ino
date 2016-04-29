@@ -21,8 +21,8 @@ IPAddress ip(192, 168, 1, 105); // Arduino IP
 
 const int SOUND_SENSOR = A0; //pin for the Grove Sound Sensor
 
-const int trigPin = 11;
-const int echoPin = 10;
+const int trigPin = 8;
+const int echoPin = 7;
 
 const int maxDistance = 30;
 const int numOfLamps = 3;
@@ -36,6 +36,7 @@ void setup() {
   Serial.begin (9600);
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
+  Ethernet.begin(mac, ip);
 }
 
 void loop() {
