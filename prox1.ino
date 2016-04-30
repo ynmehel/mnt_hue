@@ -13,11 +13,11 @@
 #include <SPI.h>
 #include <Ethernet.h>
 
-const char hueHubIP[] = "192.168.1.100";  // Hue hub IP
-const char hueUsername[] = "HtBhcb007XSZQnThI9MKRl01gegMJhI0SYdn0hL4";
+const char hueHubIP[] = "192.168.1.101";  // Hue hub IP
+const char hueUsername[] = "AdJqIcXOMOu0A35u06xUVICd3YFFiRcEuSXUJ8Sy";
 const int hueHubPort = 80;
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-IPAddress ip(192, 168, 1, 105); // Arduino IP
+IPAddress ip(192, 168, 1, 103); // Arduino IP
 
 const int SOUND_SENSOR = A0; //pin for the Grove Sound Sensor
 
@@ -36,10 +36,12 @@ int currentClaps = 0;
 
 const int THRESHOLD = 90; //the sound level that will be treated as a 'clap'
 const int SOUND_SAMPLE_LENGTH = 500; //the amount of ms to wait before determining to turn off/on
-const int CLAP_DURATION_WINDOW = 1500; //the amount of ms max to make the number of claps specified (ms)
-const int CLAPS_FOR_TRIGGER_ON_OFF = 2; //the number of claps for the relay to trigger
+const int CLAP_DURATION_WINDOW = 1000; //the amount of ms max to make the number of claps specified (ms)
+const int CLAPS_FOR_TRIGGER_ON_OFF = 2; 
+const int CLAPS_FOR_RANDOM_COLOR = 1; 
 
 int loopCounter;
+bool lampsAreOn;
 
 EthernetClient client;
 
@@ -48,21 +50,22 @@ void setup() {
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
   Ethernet.begin(mac, ip);
+  lampsAreOn = true;
 }
 
 void loop() {
 
   if (loopCounter == 50) {
 
-//    checkDistance();
+    checkDistance();
     loopCounter = 0;
   }
-//  checkSound();
-//  loopCounter++;
+  checkSound();
+  loopCounter++;
 
-  setRandomColorOnGroup();
-  
-  delay(500);
+  //  setRandomColorOnGroup();
+
+  delay(10);
 }
 
 
@@ -134,35 +137,20 @@ void checkSound() {
     }
   }
 
-  if (millis() - detectionSpanInitial >= 400)
+  if (millis() - detectionSpanInitial >= CLAP_DURATION_WINDOW)
   {
-//    setGroupBrightness(lightState ? 200 : 0);
-//    lightState = !lightState;
-//      delay(1000);
-      
+    Serial.print("claps ");
+    Serial.println(claps);
+    if (claps == CLAPS_FOR_RANDOM_COLOR) {
+      setRandomColorOnGroup();
+      String command;
+      Serial.println("Command sent"); 
+    }
+    
     if (claps == CLAPS_FOR_TRIGGER_ON_OFF)
     {
-      //      setRandomColorOnLamp(1);
-      //      setRandomColorOnLamp(2);
-      //      setRandomColorOnLamp(3);
-
-
-  
-//      setGroupBrightness(lightState ? 200 : 0);
-//    lightState = !lightState;
-      setRandomColorOnGroup();
-
-      String command;
-      //      turnOnOffLamp(3, !lightState);
-      //      turnOnOffLamp(2, !lightState);
-      //      turnOnOffLamp(1, !lightState);
-
-
-      
-
-      Serial.println("Command sent");
-//      delay(750);
-
+      turnOnOffGroup(!lampsAreOn);
+      lampsAreOn = !lampsAreOn;
     }
     claps = 0;
   }

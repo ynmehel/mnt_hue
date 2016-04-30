@@ -2,13 +2,27 @@
 void setBrightness(int lightNum, int brightness) {
 
   Serial.println("Setting brightness " + String(brightness));
-  sendCommand(lightNum, "{\"bri\":" + String(brightness) +"}");
+  sendCommand(lightNum, "{\"bri\":" + String(brightness) + "}");
 }
 
 void setGroupBrightness(int brightness) {
 
   Serial.println("Setting group brightness " + String(brightness));
-  sendGroupCommand("{\"bri\":" + String(brightness) +"}");
+  sendGroupCommand("{\"bri\":" + String(brightness) + "}");
+}
+
+void turnOnOffGroup (bool isOn) {
+  
+  if (isOn) {
+
+    Serial.println("Turning on group");
+    sendGroupCommand("{\"on\": true}");
+  }
+  else {
+
+    Serial.println("Turning off group ");
+    sendGroupCommand("{\"on\": false}");
+  }
 }
 
 void turnOnOffLamp(int lightNum, bool isOn) {
