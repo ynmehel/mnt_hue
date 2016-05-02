@@ -11,6 +11,12 @@ void setGroupBrightness(int brightness) {
   sendGroupCommand("{\"bri\":" + String(brightness) + "}");
 }
 
+void turnOnGroupWithRandomColor() {
+
+   setRandomColorOnGroup();
+   sendGroupCommand("{\"on\": true}");
+}
+
 void turnOnOffGroup (bool isOn) {
   
   if (isOn) {

@@ -36,9 +36,9 @@ int currentClaps = 0;
 
 const int THRESHOLD = 90; //the sound level that will be treated as a 'clap'
 const int SOUND_SAMPLE_LENGTH = 500; //the amount of ms to wait before determining to turn off/on
-const int CLAP_DURATION_WINDOW = 1000; //the amount of ms max to make the number of claps specified (ms)
-const int CLAPS_FOR_TRIGGER_ON_OFF = 2; 
-const int CLAPS_FOR_RANDOM_COLOR = 1; 
+const int CLAP_DURATION_WINDOW = 1200; //the amount of ms max to make the number of claps specified (ms)
+const int CLAPS_FOR_TRIGGER_ON_OFF = 2;
+const int CLAPS_FOR_RANDOM_COLOR = 1;
 
 int loopCounter;
 bool lampsAreOn;
@@ -50,7 +50,7 @@ void setup() {
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
   Ethernet.begin(mac, ip);
-  lampsAreOn = true;
+//  lampsAreOn = true;
 }
 
 void loop() {
@@ -79,8 +79,6 @@ void checkDistance() {
   digitalWrite(trigPin, LOW);
   duration = pulseIn(echoPin, HIGH);
   distance = (duration / 2) / 29.1;
-  if (distance < 4) {
-  }
 
   if (distance >= maxDistance || distance <= 0) {
     Serial.println("Out of range");
@@ -93,25 +91,35 @@ void checkDistance() {
     Serial.println();
     for (int i = 1; i <= numOfLamps ; i++) {
       if (i < currentLampId) {
-        Serial.print("set lamp: ");
-        Serial.print(i);
-        Serial.print(" brightness: ");
-        Serial.print(maxBrightness);
+        //        Serial.print("set lamp: ");
+        //        Serial.print(i);
+        //        Serial.print(" brightness: ");
+        //        Serial.print(maxBrightness);
         turnOnOffLamp(i, true);
         setBrightness(i, maxBrightness);
       }
       else if (i == currentLampId) {
-        Serial.print("set lamp: ");
-        Serial.print(i);
-        Serial.print(" brightness: ");
-        Serial.print( brightness);
-        turnOnOffLamp(i, true);
-        setBrightness(i, brightness);
+        //        Serial.print("set lamp: ");
+        //        Serial.print(i);
+        //        Serial.print(" brightness: ");
+        //        Serial.print( brightness);
+
+        if (distance < 4) {
+
+          turnOnOffLamp(currentLampId, false);
+          lampsAreOn = false;
+          
+        } else {
+
+          turnOnOffLamp(i, true);
+          setBrightness(i, brightness);
+        }
       }
       else {
-        Serial.print("turn of: ");
-        Serial.print(i);
+        //        Serial.print("turn of: ");
+        //        Serial.print(i);
         turnOnOffLamp(i, false);
+        
       }
       Serial.println();
     }
@@ -139,19 +147,31 @@ void checkSound() {
 
   if (millis() - detectionSpanInitial >= CLAP_DURATION_WINDOW)
   {
-    Serial.print("claps ");
-    Serial.println(claps);
+    //    Serial.print("claps ");
+    //    Serial.println(claps);
     if (claps == CLAPS_FOR_RANDOM_COLOR) {
       setRandomColorOnGroup();
       String command;
-      Serial.println("Command sent"); 
+      Serial.println("Command sent");
     }
-    
+
     if (claps == CLAPS_FOR_TRIGGER_ON_OFF)
     {
       turnOnOffGroup(!lampsAreOn);
       lampsAreOn = !lampsAreOn;
     }
+    if (claps == 3)
+    {
+      if (!lampsAreOn) {
+
+        turnOnOffGroup(true);
+        lampsAreOn = true;
+        Serial.println("3 claps");
+        turnOnGroupWithRandomColor();
+      } 
+
+    }
+
     claps = 0;
   }
 }
